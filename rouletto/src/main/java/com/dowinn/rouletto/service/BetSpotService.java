@@ -56,6 +56,7 @@ public  class BetSpotService  {
 
         Map<Integer, String> gameBetSpot = redisHelper.getGameBetSpot(casinoId, tableId, currency, betLimitTypeId);
         if(gameBetSpot!=null){
+            log.info("betspot is presenet");
             return gameBetSpot;
         }
 
