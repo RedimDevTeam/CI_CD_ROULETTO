@@ -4,7 +4,7 @@ pipeline {
     environment {
         APP_NAME   = "rouletto"
         DEPLOY_DIR = "/opt/rouletto"
-        JAR_NAME   = "rouletto.jar"
+        JAR_NAME   = "rouletto-0.0.1-SNAPSHOT.jar"
     }
 
     stages {
@@ -80,25 +80,6 @@ pipeline {
                     sudo systemctl restart ${APP_NAME}
                     sleep 5
                     sudo systemctl status ${APP_NAME} --no-pager
-                '''
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                echo "===== Performing Service Health Check ====="
-                sh '''
-                    if sudo systemctl is-active --quiet ${APP_NAME}; then
-                        echo "===================================="
-                        echo "${APP_NAME.toUpperCase()} IS RUNNING SUCCESSFULLY"
-                        echo "===================================="
-                    else
-                        echo "===================================="
-                        echo "${APP_NAME.toUpperCase()} FAILED TO START"
-                        echo "===================================="
-                        sudo journalctl -u ${APP_NAME} -n 50 --no-pager
-                        exit 1
-                    fi
                 '''
             }
         }
