@@ -3,6 +3,7 @@ package com.dowinn.rouletto;
 import com.dowinn.rouletto.redis.RedisHelper;
 import com.dowinn.rouletto.service.JackPotService;
 import com.dowinn.rouletto.socket.SocketPool;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -17,6 +18,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 })
 @EnableDiscoveryClient
 @EnableFeignClients
+@Slf4j
 public class RoulettoApplication implements ApplicationRunner {
 
     public static void main(String[] args) {
@@ -34,6 +36,7 @@ public class RoulettoApplication implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        log.info("hello");
         jackPotService.initJackpot();
         socketPool.checkExpirySession();
     }
