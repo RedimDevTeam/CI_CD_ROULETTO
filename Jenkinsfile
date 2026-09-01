@@ -38,6 +38,9 @@ pipeline {
             steps {
                 echo "===== Building application ====="
 
+                  dir('jwt') {
+            sh 'mvn clean install -DskipTests'
+              }
                 dir('rouletto') {
             sh 'mvn clean install -DskipTests'
               }
