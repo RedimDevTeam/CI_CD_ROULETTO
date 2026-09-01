@@ -39,7 +39,7 @@ pipeline {
                 echo "===== Building application ====="
 
                    dir('api-response') {
-                 sh 'mvn clean install -DskipTests'
+                 sh 'mvn clean install -DskipTests -e'
               }
                    dir('helper') {
                 sh 'mvn clean install -DskipTests'
