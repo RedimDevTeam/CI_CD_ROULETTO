@@ -53,51 +53,60 @@ pipeline {
             }
         }
 
+        
+stage('Find JAR') {
+    steps {
+        echo "===== Generated JAR files ====="
+
+        dir('rouletto') {
+            sh '''
+                find target -name "*.jar" -type f -print
+            '''
+        }
+    }
+}
+
+stage('Prepare Deployment Directory') {
+    steps {
+        echo "===== Preparing deployment directory ====="
+
+        sh '''
+            sudo mkdir -p "${DEPLOY_DIR}"
+            sudo chown -R jenkins:jenkins "${DEPLOY_DIR}"
+        '''
+    }
+}
+
+stage('Deploy') {
+    steps {
+        echo "===== Deploying Rouletto ====="
+
+        dir('rouletto') {
+            sh '''
+                JAR_FILE=$(find target -maxdepth 1 -name "*.jar" -type f | head -1)
+
+                if [ -z "$JAR_FILE" ]; then
+                    echo "ERROR: JAR file not found"
+                    exit 1
+                fi
+
+                echo "Found JAR:"
+                echo "$JAR_FILE"
+
+                sudo cp "$JAR_FILE" "${DEPLOY_DIR}/${JAR_NAME}"
+
+                sudo chown jenkins:jenkins \
+                    "${DEPLOY_DIR}/${JAR_NAME}"
+
+                echo "JAR deployed successfully"
+            '''
+        }
+    }
+}
+
      
 
-        stage('Find JAR') {
-            steps {
-                echo "===== Generated JAR files ====="
-
-                sh '''
-                    find target -name "*.jar" -type f -print
-                '''
-            }
-        }
-
-        stage('Prepare Deployment Directory') {
-            steps {
-                echo "===== Preparing deployment directory ====="
-
-                sh '''
-                    sudo mkdir -p ${DEPLOY_DIR}
-                    sudo chown -R jenkins:jenkins ${DEPLOY_DIR}
-                '''
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "===== Deploying application ====="
-
-                sh '''
-                    JAR_FILE=$(find target -maxdepth 1 -name "*.jar" -type f | head -1)
-
-                    if [ -z "$JAR_FILE" ]; then
-                        echo "ERROR: JAR file not found"
-                        exit 1
-                    fi
-
-                    echo "Found JAR: $JAR_FILE"
-
-                    sudo cp "$JAR_FILE" "${DEPLOY_DIR}/${JAR_NAME}"
-
-                    sudo chown jenkins:jenkins "${DEPLOY_DIR}/${JAR_NAME}"
-
-                    echo "JAR deployed successfully"
-                '''
-            }
-        }
+       
 
         stage('Restart Application') {
             steps {
