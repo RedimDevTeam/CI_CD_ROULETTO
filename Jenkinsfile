@@ -53,27 +53,15 @@ pipeline {
             }
         }
 
-        
 stage('Find JAR') {
     steps {
         echo "===== Generated JAR files ====="
 
         dir('rouletto') {
             sh '''
-                find target -name "*.jar" -type f -print
+                find target -maxdepth 1 -name "*.jar" -type f -print
             '''
         }
-    }
-}
-
-stage('Prepare Deployment Directory') {
-    steps {
-        echo "===== Preparing deployment directory ====="
-
-        sh '''
-            sudo mkdir -p "${DEPLOY_DIR}"
-            sudo chown -R jenkins:jenkins "${DEPLOY_DIR}"
-        '''
     }
 }
 
@@ -90,60 +78,52 @@ stage('Deploy') {
                     exit 1
                 fi
 
-                echo "Found JAR:"
-                echo "$JAR_FILE"
+                echo "Found JAR: $JAR_FILE"
 
-                sudo cp "$JAR_FILE" "${DEPLOY_DIR}/${JAR_NAME}"
+                sudo mv "$JAR_FILE" /opt/rouletto/rouletto.jar
 
-                sudo chown jenkins:jenkins \
-                    "${DEPLOY_DIR}/${JAR_NAME}"
-
-                echo "JAR deployed successfully"
+                echo "JAR moved to /opt/rouletto/rouletto.jar"
             '''
         }
     }
 }
 
-     
+stage('Restart Application') {
+    steps {
+        echo "===== Restarting Rouletto ====="
 
-       
+        sh '''
+            sudo systemctl restart rouletto
 
-        stage('Restart Application') {
-            steps {
-                echo "===== Restarting application ====="
+            sleep 5
 
-                sh '''
-                    sudo systemctl restart ${APP_NAME}
-
-                    sleep 5
-
-                    sudo systemctl status ${APP_NAME} --no-pager
-                '''
-            }
-        }
-
-        stage('Health Check') {
-            steps {
-                echo "===== Checking application ====="
-
-                sh '''
-                    if sudo systemctl is-active --quiet ${APP_NAME}; then
-                        echo "===================================="
-                        echo "Application is RUNNING"
-                        echo "===================================="
-                    else
-                        echo "===================================="
-                        echo "Application FAILED TO START"
-                        echo "===================================="
-
-                        sudo journalctl -u ${APP_NAME} -n 50 --no-pager
-
-                        exit 1
-                    fi
-                '''
-            }
-        }
+            sudo systemctl status rouletto --no-pager
+        '''
     }
+}
+
+stage('Health Check') {
+    steps {
+        echo "===== Health Check ====="
+
+        sh '''
+            if sudo systemctl is-active --quiet rouletto; then
+                echo "===================================="
+                echo "ROULETTO IS RUNNING"
+                echo "===================================="
+            else
+                echo "===================================="
+                echo "ROULETTO FAILED TO START"
+                echo "===================================="
+
+                sudo journalctl -u rouletto -n 50 --no-pager
+
+                exit 1
+            fi
+        '''
+    }
+}
+
 
     post {
 
