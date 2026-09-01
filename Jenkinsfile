@@ -38,9 +38,9 @@ pipeline {
             steps {
                 echo "===== Building application ====="
 
-                sh '''
-                    mvn clean install -DskipTests
-                '''
+                dir('rouletto') {
+            sh 'mvn clean install -DskipTests'
+              }
             }
         }
 
